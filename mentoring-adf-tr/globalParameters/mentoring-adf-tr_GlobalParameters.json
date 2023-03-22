@@ -1,0 +1,6 @@
+{
+	"HTTPPostUrlLogApp": {
+		"type": "string",
+		"value": "https://mentoring-key-vault-tr.vault.azure.net/secrets/scrHTTPPostURLLogApp?api-version=7.0"
+	}
+}

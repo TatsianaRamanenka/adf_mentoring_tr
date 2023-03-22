@@ -1,0 +1,434 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mentoring-adf-tr"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureMentoring_Module11_logicApp')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "WebHTTPPostUrlLogApp",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Web get URL",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@string(activity('Web get URL').output.value)",
+								"type": "Expression"
+							},
+							"method": "POST",
+							"headers": {},
+							"body": {
+								"value": "{\n  \"receiver\" : \"@{pipeline().parameters.receiver}\",\n  \"pipelineName\" : \"@{pipeline().Pipeline}\", \n  \"pipelineStatus\" : \"@{activity('Execute Pipeline Succeed').Status}\", \n  \"TriggerType\" : \"@{pipeline().TriggerType}\",\n  \"RunID\": \"@{pipeline().RunId}\",\n  \"ExecutionStartTime\": \"@{formatDateTime(activity('Execute Pipeline Succeed').ExecutionStartTime, 'yyyy-MM-dd HH:mm:ss')}\" ,\n  \"ExecutionEndTime\": \"@{formatDateTime(activity('Execute Pipeline Succeed').ExecutionEndTime, 'yyyy-MM-dd HH:mm:ss')}\" ,\n  \"dataFactoryName\" : \"@{pipeline().DataFactory}\",\n  \"errorMessage\": \"@{variables('ErrorMessage')}\"\n}",
+								"type": "Expression"
+							}
+						}
+					},
+					{
+						"name": "Web get URL",
+						"type": "WebActivity",
+						"dependsOn": [
+							{
+								"activity": "Execute Pipeline Succeed",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"url": {
+								"value": "@pipeline().globalParameters.HTTPPostUrlLogApp",
+								"type": "Expression"
+							},
+							"method": "GET",
+							"headers": {},
+							"authentication": {
+								"type": "MSI",
+								"resource": "https://vault.azure.net"
+							}
+						}
+					},
+					{
+						"name": "Execute Pipeline Succeed",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "AzureMentoring_Module10_Succeed",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Set variable Error message",
+						"type": "SetVariable",
+						"dependsOn": [
+							{
+								"activity": "Execute Pipeline Succeed",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "ErrorMessage",
+							"value": {
+								"value": "@concat('An error: ', activity('Execute Pipeline Succeed').error.Message)",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"receiver": {
+						"type": "string",
+						"defaultValue": "tatsiana_ramanenka1@epam.com"
+					}
+				},
+				"variables": {
+					"ErrorMessage": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-03-21T14:29:58Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureMentoring_Module5_Master')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Execute Module2",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "AzureMentoring_Module2",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Execute Module 5 Azure SQL DB",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Execute Module2",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "AzureMentoring_Module5_stg_to_dbo",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Execute Module5 Arhive",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Execute Module 5 Azure SQL DB",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "AzureMentoring_Module5_archivation",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"variables": {
+					"source_filename": {
+						"type": "String",
+						"defaultValue": "credits"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-02-06T10:30:55Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureMentoring_Module7_master')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy Online files from blob to DL",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "AzureMentoring_Module7_blob_to_DL",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "Copy DL files into Azure SQL stg stg_dbo archivation",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "Copy Online files from blob to DL",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "AzureMentoring_Module7_JSON_To_AzureSQL",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-02-21T16:12:28Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureMentoring_Module8')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow Movie to Dims",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DataMart_DimDataflow",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"SourcetMovies": {
+										"tablename": "tMovies",
+										"schemaname": "dbo"
+									},
+									"SourcetMovieStatus": {
+										"tablename": "tMovieStatus",
+										"schemaname": "dbo"
+									},
+									"SourcetOnlineService": {
+										"tablename": "tOnlineService",
+										"schemaname": "dbo"
+									},
+									"DimMovieSink": {
+										"tablename": "DimMovieSink",
+										"schemaname": "dbo"
+									},
+									"DimOnlineServicesink": {
+										"tablename": "DimOnlineService",
+										"schemaname": "dbo"
+									}
+								}
+							},
+							"staging": {},
+							"integrationRuntime": {
+								"referenceName": "IR-Module8",
+								"type": "IntegrationRuntimeReference"
+							},
+							"traceLevel": "Fine"
+						}
+					},
+					{
+						"name": "Data flow for Facts",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Data flow Movie to Dims",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "DataMart_FactDataflow_copy1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourcetOnlinePurchase": {
+										"tablename": "tOnlinePurchase",
+										"schemaname": "dbo"
+									},
+									"sourcetOnlineService": {
+										"tablename": "tOnlineService",
+										"schemaname": "dbo"
+									},
+									"sourcetMovies": {
+										"tablename": "tMovies",
+										"schemaname": "dbo"
+									},
+									"sourceDimMovie": {
+										"tablename": "DimMovie",
+										"schemaname": "dbo"
+									},
+									"sourceDimOnlineService": {
+										"tablename": "DimOnlineService",
+										"schemaname": "dbo"
+									},
+									"sinkFactOnlinePurchaseMonthlySnapshot": {
+										"tablename": "FactOnlinePurchase_MonthlySnapshot",
+										"schemaname": "dbo"
+									},
+									"FactOnlinePurchase": {
+										"tablename": "FactOnlinePurchase",
+										"schemaname": "dbo"
+									}
+								}
+							},
+							"staging": {},
+							"integrationRuntime": {
+								"referenceName": "IR-Module8",
+								"type": "IntegrationRuntimeReference"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-03-01T12:34:18Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trModule6_IncrLoad')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "AzureMentoring_Module6",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2023-02-13T16:30:00Z",
+						"endTime": "2023-02-15T16:30:00Z",
+						"timeZone": "UTC",
+						"schedule": {
+							"minutes": [
+								33
+							],
+							"hours": [
+								16
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

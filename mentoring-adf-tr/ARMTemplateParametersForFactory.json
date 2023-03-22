@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "mentoring-adf-tr"
+		},
+		"LS_AzureSQLMtdDriven_properties_typeProperties_connectionString_secretName": {
+			"value": "@linkedService().ConnectionString"
+		},
+		"LS_AzureSQL_DataMart_properties_typeProperties_connectionString_secretName": {
+			"value": "scrAzureSQLDataMart"
+		},
+		"LS_MSSQLCinemaTickets_properties_typeProperties_connectionString_secretName": {
+			"value": "scrMSSQLCinemaTickets"
+		},
+		"LS_MoviesAzureSqlDB_properties_typeProperties_connectionString_secretName": {
+			"value": "MoviesAzureSQLDBConnectionString"
+		},
+		"LS_azurementoringdatalaketr_properties_typeProperties_url": {
+			"value": "https://azurementoringdatalaketr.dfs.core.windows.net/"
+		},
+		"LS_blobOnline_sasUri": {
+			"value": ""
+		},
+		"LS_blobOnline_properties_typeProperties_sasToken_secretName": {
+			"value": "scrblobOnlineModule7"
+		},
+		"LS_mentoringBlobModule4_sasUri": {
+			"value": ""
+		},
+		"LS_mentoringBlobModule4_properties_typeProperties_sasToken_secretName": {
+			"value": "metoringblobModule4"
+		},
+		"LS_mentoringkeyvaulttr_properties_typeProperties_baseUrl": {
+			"value": "https://mentoring-key-vault-tr.vault.azure.net/"
+		},
+		"LS_metadatadriven_sasUri": {
+			"value": ""
+		},
+		"LS_metadatadriven_properties_typeProperties_sasToken_secretName": {
+			"value": "scrMetadaDriven"
+		},
+		"LS_metnoringtr_moviescontainer_sasUri": {
+			"value": ""
+		},
+		"LS_metnoringtr_moviescontainer_properties_typeProperties_sasToken_secretName": {
+			"value": "metoringKeyValueSecret"
+		}
+	}
+}

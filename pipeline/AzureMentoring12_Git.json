@@ -1,0 +1,33 @@
+{
+	"name": "AzureMentoring12_Git",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata1",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_AzureSQL_stg_Module9",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "tables",
+							"SchemaName": "information_schema",
+							"ConnectionString": "MoviesAzureSQLDBConnectionString"
+						}
+					},
+					"fieldList": []
+				}
+			}
+		],
+		"annotations": []
+	}
+}

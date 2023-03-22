@@ -1,0 +1,23 @@
+{
+	"name": "mentoring-adf-tr",
+	"properties": {
+		"globalParameters": {
+			"HTTPPostUrlLogApp": {
+				"type": "string",
+				"value": "https://mentoring-key-vault-tr.vault.azure.net/secrets/scrHTTPPostURLLogApp?api-version=7.0"
+			}
+		}
+	},
+	"location": "francecentral",
+	"identity": {
+		"type": "SystemAssigned,UserAssigned",
+		"principalId": "620280cb-db6d-468a-82ba-ee5a324ad8d4",
+		"tenantId": "b41b72d0-4e9f-4c26-8a69-f949f367c91d",
+		"userAssignedIdentities": {
+			"/subscriptions/e9c493a7-dccb-412d-9f35-53b4d4caa379/resourcegroups/azure-mentoring-tr/providers/Microsoft.ManagedIdentity/userAssignedIdentities/AzureSQLManagedIdentity": {
+				"clientId": "17677163-a753-4933-9ef4-153c9510b851",
+				"principalId": "cfb8b387-7ee8-4ddf-8e72-63510d9a4185"
+			}
+		}
+	}
+}

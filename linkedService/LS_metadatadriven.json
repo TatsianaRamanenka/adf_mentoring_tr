@@ -1,0 +1,19 @@
+{
+	"name": "LS_metadatadriven",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"sasUri": "https://azurementoringdatalaketr.blob.core.windows.net/raw/metadata-driven",
+			"sasToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_mentoringkeyvaulttr",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "scrMetadaDriven"
+			}
+		}
+	}
+}

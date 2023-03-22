@@ -1,0 +1,92 @@
+{
+	"name": "AzureMentoring_Module2_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy movies from blob into data lake_copy1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"wildcardFileName": "*",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": {
+								"value": "@concat(formatDateTime(utcNow(), variables('currentdate') ), '.csv')",
+								"type": "Expression"
+							}
+						}
+					},
+					"enableStaging": false,
+					"logSettings": {
+						"enableCopyActivityLog": true,
+						"copyActivityLogSettings": {
+							"logLevel": "Info",
+							"enableReliableLogging": false
+						},
+						"logLocationSettings": {
+							"linkedServiceName": {
+								"referenceName": "LS_azurementoringdatalaketr",
+								"type": "LinkedServiceReference"
+							},
+							"path": "log"
+						}
+					},
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_blobmovies",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_datalake_rowmovies_copy1",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"variables": {
+			"currentdate": {
+				"type": "String",
+				"defaultValue": "@formatDateTime(utcnow(),'yyyyMMddHHmmss')"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-01-30T15:01:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

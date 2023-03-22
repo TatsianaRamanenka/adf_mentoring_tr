@@ -1,0 +1,19 @@
+{
+	"name": "LS_blobOnline",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"sasUri": "https://azurementoringstoragetr.blob.core.windows.net/online",
+			"sasToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_mentoringkeyvaulttr",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "scrblobOnlineModule7"
+			}
+		}
+	}
+}

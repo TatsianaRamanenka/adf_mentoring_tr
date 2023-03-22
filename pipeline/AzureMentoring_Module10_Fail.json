@@ -1,0 +1,23 @@
+{
+	"name": "AzureMentoring_Module10_Fail",
+	"properties": {
+		"activities": [
+			{
+				"name": "Fail_Unit1",
+				"type": "Fail",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"message": {
+						"value": "@string('Fail activity Module 10 Chapter 1')",
+						"type": "Expression"
+					},
+					"errorCode": "1000"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-20T10:23:56Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

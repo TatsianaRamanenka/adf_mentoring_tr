@@ -1,0 +1,43 @@
+{
+	"name": "AzureMentoring_Module7_master",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy Online files from blob to DL",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "AzureMentoring_Module7_blob_to_DL",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Copy DL files into Azure SQL stg stg_dbo archivation",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Copy Online files from blob to DL",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "AzureMentoring_Module7_JSON_To_AzureSQL",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-02-21T16:12:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

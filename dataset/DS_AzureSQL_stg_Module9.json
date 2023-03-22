@@ -1,0 +1,43 @@
+{
+	"name": "DS_AzureSQL_stg_Module9",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_AzureSQLMtdDriven",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"ConnectionString": {
+					"value": "@dataset().ConnectionString",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"TableName": {
+				"type": "string",
+				"defaultValue": "tables"
+			},
+			"SchemaName": {
+				"type": "string",
+				"defaultValue": "information_schema"
+			},
+			"ConnectionString": {
+				"type": "string",
+				"defaultValue": "MoviesAzureSQLDBConnectionString"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().SchemaName",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().TableName",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

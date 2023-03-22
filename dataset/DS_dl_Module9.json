@@ -1,0 +1,81 @@
+{
+	"name": "DS_dl_Module9",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_metadatadriven",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"SecretKey": {
+				"type": "string",
+				"defaultValue": "scrMetadaDriven"
+			},
+			"File": {
+				"type": "string",
+				"defaultValue": "credits.csv"
+			},
+			"ColumnDelimiter": {
+				"type": "string",
+				"defaultValue": ","
+			},
+			"EscapeCharacter": {
+				"type": "string",
+				"defaultValue": "\""
+			},
+			"QuoteCharacter": {
+				"type": "string",
+				"defaultValue": "\""
+			},
+			"Encoding": {
+				"type": "string",
+				"defaultValue": "UTF-8"
+			},
+			"ContainerName": {
+				"type": "string",
+				"defaultValue": "raw"
+			},
+			"FolderName": {
+				"type": "string",
+				"defaultValue": "metadata-driven"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": {
+					"value": "@dataset().File",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().FolderName",
+					"type": "Expression"
+				},
+				"container": {
+					"value": "@dataset().ContainerName",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": {
+				"value": "@dataset().ColumnDelimiter",
+				"type": "Expression"
+			},
+			"encodingName": {
+				"value": "@dataset().Encoding",
+				"type": "Expression"
+			},
+			"escapeChar": {
+				"value": "@dataset().EscapeCharacter",
+				"type": "Expression"
+			},
+			"firstRowAsHeader": true,
+			"quoteChar": {
+				"value": "@dataset().QuoteCharacter",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

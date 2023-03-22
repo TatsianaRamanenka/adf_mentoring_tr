@@ -1,0 +1,13 @@
+{
+	"name": "DS_DataMartAzureSQLDB_WOPrmt",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_AzureSQL_DataMart",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

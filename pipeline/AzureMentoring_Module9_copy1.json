@@ -1,0 +1,368 @@
+{
+	"name": "AzureMentoring_Module9_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "metadata",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Truncate stg tables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_AzureSQL_stg_Module9",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "tControlMetadata",
+							"SchemaName": "etl",
+							"ConnectionString": "MoviesAzureSQLDBConnectionString"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEach row of metadata",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('metadata').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Copy from DL to stg",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"additionalColumns": [
+										{
+											"name": "source_filename",
+											"value": "$$FILEPATH"
+										},
+										{
+											"name": "pipelineId",
+											"value": {
+												"value": "@pipeline().RunId",
+												"type": "Expression"
+											}
+										}
+									],
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "/*EXECUTE('TRUNCATE TABLE @{item().TrgSchemaName}' +'.'+ '@{item().TrgTableName}');*/",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"dataIntegrationUnits": {
+									"value": "@item().DIUValue",
+									"type": "Expression"
+								},
+								"translator": {
+									"value": "@json(item().Mapping)",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "DS_dl_Module9",
+									"type": "DatasetReference",
+									"parameters": {
+										"SecretKey": "scrMetadaDriven",
+										"File": {
+											"value": "@item().SrcFileName",
+											"type": "Expression"
+										},
+										"ColumnDelimiter": {
+											"value": "@item().SrcColumnDelimiter",
+											"type": "Expression"
+										},
+										"EscapeCharacter": {
+											"value": "@item().SrcEscapeCharacter",
+											"type": "Expression"
+										},
+										"QuoteCharacter": {
+											"value": "@item().SrcQuoteCharacter",
+											"type": "Expression"
+										},
+										"Encoding": {
+											"value": "@item().SrcEncoding",
+											"type": "Expression"
+										},
+										"ContainerName": {
+											"value": "@item().SrcContainer",
+											"type": "Expression"
+										},
+										"FolderName": {
+											"value": "@item().SrcFolder",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DS_AzureSQL_stg_Module9",
+									"type": "DatasetReference",
+									"parameters": {
+										"TableName": {
+											"value": "@item().TrgTableName",
+											"type": "Expression"
+										},
+										"SchemaName": {
+											"value": "@item().TrgSchemaName",
+											"type": "Expression"
+										},
+										"ConnectionString": "MoviesAzureSQLDBConnectionString"
+									}
+								}
+							]
+						},
+						{
+							"name": "SP LoggingMetadata",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Copy from DL to stg",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[etl].[LoggingMetadata]",
+								"storedProcedureParameters": {
+									"PipelineName": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ActivityRunID": {
+										"value": {
+											"value": "@activity('Copy from DL to stg').ActivityRunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"JSON": {
+										"value": {
+											"value": "@string(activity('Copy from DL to stg').output)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"MeterType": {
+										"value": {
+											"value": "@string(activity('Copy from DL to stg').output.billingReference.billableDuration[0].metertype)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"duration": {
+										"value": {
+											"value": "@float(activity('Copy from DL to stg').output.billingReference.billableDuration[0].duration)",
+											"type": "Expression"
+										},
+										"type": "Decimal"
+									},
+									"unit": {
+										"value": {
+											"value": "@string(activity('Copy from DL to stg').output.billingReference.billableDuration[0].unit)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"PipelineRunID": {
+										"value": {
+											"value": "@pipeline().RunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_AzureSQLMtdDriven",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"ConnectionString": "MoviesAzureSQLDBConnectionString"
+								}
+							}
+						},
+						{
+							"name": "SP LoggingMetadataError",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Copy from DL to stg",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[etl].[LoggingMetadataError]",
+								"storedProcedureParameters": {
+									"PipelineRunID": {
+										"value": {
+											"value": "@pipeline().RunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"PipelineName": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ActivityRunID": {
+										"value": {
+											"value": "@activity('Copy from DL to stg').ActivityRunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ActivityName": {
+										"value": {
+											"value": "@string('Copy from DL to stg')",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ErrorMessage": {
+										"value": {
+											"value": "@string(activity('Copy from DL to stg').output.errors[0].Message)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ErrorCode": {
+										"value": {
+											"value": "@string(activity('Copy from DL to stg').output.errors[0].Code)",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ErrorType": {
+										"value": {
+											"value": "@string(activity('Copy from DL to stg').output.errors[0].EventType)",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_AzureSQLMtdDriven",
+								"type": "LinkedServiceReference",
+								"parameters": {
+									"ConnectionString": "MoviesAzureSQLDBConnectionString"
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Truncate stg tables",
+				"type": "Script",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "LS_MoviesAzureSqlDB",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": "TRUNCATE TABLE stg.credits;\nTRUNCATE TABLE stg.ratings;\nTRUNCATE TABLE stg.movies_metadata;"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-16T21:42:02Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

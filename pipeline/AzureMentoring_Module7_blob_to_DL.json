@@ -1,0 +1,251 @@
+{
+	"name": "AzureMentoring_Module7_blob_to_DL",
+	"properties": {
+		"activities": [
+			{
+				"name": "LookupOldWaterMarkActivity",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "IF EXISTS (SELECT 1 FROM watermarktable where TableName  =  'online_table') \nselect WatermarkValue from watermarktable where TableName  =  'online_table'\nELSE\nselect cast( @{variables('LastLoadDate')} AS datetime) AS WatermarkValue ",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_moviesAzureSQLDB",
+						"type": "DatasetReference",
+						"parameters": {
+							"tablename": "watermarktable",
+							"schemaname": "dbo"
+						}
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "Get Files Metadata",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "LookupOldWaterMarkActivity",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "SourceDataset_7o8",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"modifiedDatetimeStart": {
+							"value": "@activity('LookupOldWaterMarkActivity').output.firstRow.WatermarkValue ",
+							"type": "Expression"
+						},
+						"modifiedDatetimeEnd": {
+							"value": "@variables('NewLoadDate')",
+							"type": "Expression"
+						},
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Set variable FilesCount",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Files Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "FilesCount",
+					"value": {
+						"value": "@string(length(activity('Get Files Metadata').output.childItems))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "If Loading Condition",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Set variable FilesCount",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(variables('FilesCount'), '0')",
+						"type": "Expression"
+					},
+					"ifTrueActivities": [
+						{
+							"name": "Copy_FromBlobToDL_Online",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [
+								{
+									"name": "Source",
+									"value": "online//"
+								},
+								{
+									"name": "Destination",
+									"value": "raw/online/"
+								}
+							],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": false,
+										"modifiedDatetimeStart": {
+											"value": "@activity('LookupOldWaterMarkActivity').output.firstRow.WatermarkValue",
+											"type": "Expression"
+										},
+										"modifiedDatetimeEnd": {
+											"value": "@variables('NewLoadDate')",
+											"type": "Expression"
+										},
+										"wildcardFileName": "*",
+										"deleteFilesAfterCompletion": false
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false,
+								"enableSkipIncompatibleRow": false,
+								"skipErrorFile": {
+									"fileMissing": true
+								},
+								"validateDataConsistency": false
+							},
+							"inputs": [
+								{
+									"referenceName": "SourceDataset_7o8",
+									"type": "DatasetReference"
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "DestinationDataset_7o8",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "SP usp_write_watermark",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "If Loading Condition",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_write_watermark]",
+					"storedProcedureParameters": {
+						"TableName": {
+							"value": "online_table",
+							"type": "String"
+						},
+						"LastModifiedtime": {
+							"value": {
+								"value": "@{variables('NewLoadDate')}",
+								"type": "Expression"
+							},
+							"type": "Datetime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_MoviesAzureSqlDB",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"variables": {
+			"LastLoadDate": {
+				"type": "String",
+				"defaultValue": "'1900-01-01'"
+			},
+			"NewLoadDate": {
+				"type": "String",
+				"defaultValue": "@formatDateTime(utcnow(),'yyyy-MM-dd HH:mm:ss')"
+			},
+			"FilesCount": {
+				"type": "String",
+				"defaultValue": "0"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-02-22T15:37:12Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

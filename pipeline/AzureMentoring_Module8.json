@@ -1,0 +1,117 @@
+{
+	"name": "AzureMentoring_Module8",
+	"properties": {
+		"activities": [
+			{
+				"name": "Data flow Movie to Dims",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DataMart_DimDataflow",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"SourcetMovies": {
+								"tablename": "tMovies",
+								"schemaname": "dbo"
+							},
+							"SourcetMovieStatus": {
+								"tablename": "tMovieStatus",
+								"schemaname": "dbo"
+							},
+							"SourcetOnlineService": {
+								"tablename": "tOnlineService",
+								"schemaname": "dbo"
+							},
+							"DimMovieSink": {
+								"tablename": "DimMovieSink",
+								"schemaname": "dbo"
+							},
+							"DimOnlineServicesink": {
+								"tablename": "DimOnlineService",
+								"schemaname": "dbo"
+							}
+						}
+					},
+					"integrationRuntime": {
+						"referenceName": "IR-Module8",
+						"type": "IntegrationRuntimeReference"
+					},
+					"traceLevel": "Fine"
+				}
+			},
+			{
+				"name": "Data flow for Facts",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [
+					{
+						"activity": "Data flow Movie to Dims",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "DataMart_FactDataflow_copy1",
+						"type": "DataFlowReference",
+						"datasetParameters": {
+							"sourcetOnlinePurchase": {
+								"tablename": "tOnlinePurchase",
+								"schemaname": "dbo"
+							},
+							"sourcetOnlineService": {
+								"tablename": "tOnlineService",
+								"schemaname": "dbo"
+							},
+							"sourcetMovies": {
+								"tablename": "tMovies",
+								"schemaname": "dbo"
+							},
+							"sourceDimMovie": {
+								"tablename": "DimMovie",
+								"schemaname": "dbo"
+							},
+							"sourceDimOnlineService": {
+								"tablename": "DimOnlineService",
+								"schemaname": "dbo"
+							},
+							"sinkFactOnlinePurchaseMonthlySnapshot": {
+								"tablename": "FactOnlinePurchase_MonthlySnapshot",
+								"schemaname": "dbo"
+							},
+							"FactOnlinePurchase": {
+								"tablename": "FactOnlinePurchase",
+								"schemaname": "dbo"
+							}
+						}
+					},
+					"integrationRuntime": {
+						"referenceName": "IR-Module8",
+						"type": "IntegrationRuntimeReference"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-01T12:34:18Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

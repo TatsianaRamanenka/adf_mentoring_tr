@@ -1,0 +1,19 @@
+{
+	"name": "LS_mentoringBlobModule4",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"sasUri": "https://azurementoringautr.blob.core.windows.net/ratings",
+			"sasToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_mentoringkeyvaulttr",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "metoringblobModule4"
+			}
+		}
+	}
+}

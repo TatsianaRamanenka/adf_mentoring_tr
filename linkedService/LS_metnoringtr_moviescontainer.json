@@ -1,0 +1,19 @@
+{
+	"name": "LS_metnoringtr_moviescontainer",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"sasUri": "https://azurementoringstoragetr.blob.core.windows.net/movies",
+			"sasToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_mentoringkeyvaulttr",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "metoringKeyValueSecret"
+			}
+		}
+	}
+}

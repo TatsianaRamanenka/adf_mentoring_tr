@@ -1,0 +1,27 @@
+{
+	"name": "LS_AzureSQLMtdDriven",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"ConnectionString": {
+				"type": "string",
+				"defaultValue": "MoviesAzureSQLDBConnectionString"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LS_mentoringkeyvaulttr",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": {
+					"value": "@linkedService().ConnectionString",
+					"type": "Expression"
+				}
+			}
+		}
+	}
+}

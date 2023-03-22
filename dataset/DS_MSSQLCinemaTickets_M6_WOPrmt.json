@@ -1,0 +1,13 @@
+{
+	"name": "DS_MSSQLCinemaTickets_M6_WOPrmt",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_MSSQLCinemaTickets",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,16 @@
+{
+	"name": "DS_moviesAzureSQLDBNoPrmt",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_MoviesAzureSqlDB",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"table": ""
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

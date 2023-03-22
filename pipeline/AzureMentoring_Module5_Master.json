@@ -1,0 +1,69 @@
+{
+	"name": "AzureMentoring_Module5_Master",
+	"properties": {
+		"activities": [
+			{
+				"name": "Execute Module2",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "AzureMentoring_Module2",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Execute Module 5 Azure SQL DB",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Execute Module2",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "AzureMentoring_Module5_stg_to_dbo",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "Execute Module5 Arhive",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Execute Module 5 Azure SQL DB",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "AzureMentoring_Module5_archivation",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"variables": {
+			"source_filename": {
+				"type": "String",
+				"defaultValue": "credits"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2023-02-06T10:30:55Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

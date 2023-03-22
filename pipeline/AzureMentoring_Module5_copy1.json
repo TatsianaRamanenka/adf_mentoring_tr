@@ -1,0 +1,80 @@
+{
+	"name": "AzureMentoring_Module5_copy1",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lkp Get SPs",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT trim([value]) AS value FROM \nstring_split ( 'dbo.spPopulateCast, dbo.spPopulateCompany, dbo.spPopulateGenre, dbo.spPopulateMovies, dbo.spPopulateMoviesCastMap, dbo.spPopulateMoviesCompanyMap, dbo.spPopulateMoviesGenreMap, dbo.spPopulateMovieStatus, dbo.spPopulatetRatings', ',')",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_moviesAzureSQLDBNoPrmt",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachLoad fromSTGintoDBO",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Lkp Get SPs",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Lkp Get SPs').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "SPs load from stg into dbo",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": {
+									"value": "@string(item().value)",
+									"type": "Expression"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_MoviesAzureSqlDB",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-02-02T22:07:48Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

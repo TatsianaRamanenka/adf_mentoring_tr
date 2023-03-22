@@ -1,0 +1,19 @@
+{
+	"name": "DestinationDataset_7o8",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_azurementoringdatalaketr",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "online",
+				"fileSystem": "raw"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,37 @@
+{
+	"name": "AzureMentoring_Module10_Succeed",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata Succeed",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DS_AzureSQL_stg_Module9",
+						"type": "DatasetReference",
+						"parameters": {
+							"TableName": "tables",
+							"SchemaName": "information_schema",
+							"ConnectionString": "MoviesAzureSQLDBConnectionString"
+						}
+					},
+					"fieldList": [
+						"columnCount"
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-03-20T11:38:26Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
